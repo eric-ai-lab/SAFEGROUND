@@ -1,88 +1,91 @@
 # SafeGround: Know When to Trust GUI Grounding Models via Uncertainty Calibration
 
-A general-purpose framework for uncertainty-aware spatial grounding predictions with statistically guaranteed false discovery rate (FDR) control.
+This repository contains the **official implementation of SafeGround**, an uncertainty-aware framework for reliable and risk-controlled GUI grounding under limited model access.
 
-[Paper](https://arxiv.org/pdf/2602.02419)
+SafeGround estimates *spatial uncertainty* by aggregating multiple stochastic grounding predictions into a patch-level probability distribution, and calibrates uncertainty thresholds with finite-sample guarantees. This enables risk-aware deployment of GUI agents through selective prediction and safe deferral.
 
-## Directory Structure
+<p align="center">
+  <img src="safeground.png" alt="Framework Overview" width="85%">
+</p>
+
+**Paper:**
+📄 *SafeGround: Know When to Trust GUI Grounding Models via Uncertainty Calibration*
+🔗 [https://arxiv.org/abs/2602.02419](https://arxiv.org/abs/2602.02419)
+
+---
+
+## Repository Structure
 
 ```
 SAFEGROUND/
-├── heatmap.py          # Heatmap generation from sampled coordinates
-├── regions.py          # Connected region extraction using BFS
-├── margin.py           # Margin-based uncertainty measure
-├── entropy.py          # Entropy-based uncertainty measure
-├── concentration.py    # Concentration (HHI) based uncertainty
-├── combined.py         # Weighted combination of uncertainty methods
-├── uncertainty.py      # Unified API for uncertainty computation
-├── fdr_control.py      # Clopper-Pearson FDR control
-├── safeground.png      # Overview figure
-└── README.md           # This file
+├── heatmap.py          # Heatmap construction from sampled coordinates
+├── regions.py          # Connected region extraction (4-connectivity BFS)
+├── margin.py           # Margin-based uncertainty (top-2 ambiguity)
+├── entropy.py          # Entropy-based uncertainty (distributional dispersion)
+├── concentration.py    # Concentration-based uncertainty (HHI complement)
+├── combined.py         # Weighted combination of uncertainty measures
+├── uncertainty.py      # Unified uncertainty computation API
+├── fdr_control.py      # Finite-sample FDR control (Clopper–Pearson)
+└── README.md           # Project documentation
 ```
 
-## Uncertainty Quantification
+---
 
-Pipeline: Coordinates → Heatmap → Regions → Uncertainty Score
+## Uncertainty Quantification Pipeline
 
-### Heatmap Generation (`heatmap.py`)
+**Pipeline:**
+**Stochastic Coordinates → Patch Heatmap → Spatial Regions → Uncertainty Score**
 
-Converts sampled coordinates into a spatial probability distribution.
+Given multiple stochastic grounding samples, SafeGround constructs a spatial probability distribution over a patch grid, identifies coherent high-probability regions, and computes region-level uncertainty measures that capture different failure modes of GUI grounding.
 
-### Region Extraction (`regions.py`)
+### Implemented Uncertainty Measures
 
-Extracts connected regions from heatmap using BFS.
+| Method          | Description                     | Definition                                                                      |
+| --------------- | ------------------------------- | ------------------------------------------------------------------------------- |
+| `margin`        | Ambiguity between top-2 regions | (1 - \frac{\mu_1 - \mu_2}{\mu_1 + \varepsilon})                                 |
+| `entropy`       | Distributional dispersion       | (-\sum p_i \log p_i ,/, \log n)                                                 |
+| `concentration` | Lack of spatial concentration   | (1 - \sum p_i^2)                                                                |
+| `combined`      | Composite uncertainty           | (0.2,U_{\text{margin}} + 0.2,U_{\text{entropy}} + 0.6,U_{\text{concentration}}) |
 
-### Uncertainty Methods
+---
 
-| Method | Description | Formula |
-|--------|-------------|---------|
-| `margin` | Gap between top-2 regions | 1 - (μ₁ - μ₂)/(μ₁ + ε) |
-| `entropy` | Distribution entropy | -Σp·log(p) / log(n) |
-| `concentration` | HHI complement | 1 - Σp² |
-| `combined` | Weighted combination | 0.2·margin + 0.2·entropy + 0.6·concentration |
+## Risk Control via FDR Calibration
 
-## FDR Control (`fdr_control.py`)
+SafeGround calibrates an uncertainty threshold on a held-out calibration set to control the **False Discovery Rate (FDR)** of accepted predictions.
 
-### Clopper-Pearson Method
+### Clopper–Pearson Upper Confidence Bound
 
-For observing w errors in m trials, the upper bound is:
+Given (w) observed errors among (m) accepted samples, the FDR upper bound is computed as:
 
 ```
 r_upper = Beta.ppf(1 - α, w + 1, m - w)
 ```
 
-### Usage
+The largest threshold whose upper bound does not exceed the target risk level is selected for deployment.
 
-```python
-from fdr_control import calibrate_threshold_binary_search
+### Reported Metrics
 
-cal_result = calibrate_threshold_binary_search(
-    uncertainties=uncertainties,
-    hits=hits,
-    alpha=0.05,
-    target_error_rate=0.3
-)
-```
+| Metric            | Description                                |
+| ----------------- | ------------------------------------------ |
+| `threshold`       | Calibrated uncertainty threshold           |
+| `power`           | Fraction of correct predictions retained   |
+| `abstention_rate` | Fraction of predictions rejected           |
+| `upper_bound`     | Clopper–Pearson FDR upper confidence bound |
 
-### Output Metrics
-
-| Metric | Description |
-|--------|-------------|
-| `threshold` | Calibrated decision threshold |
-| `power` | Fraction of correct predictions retained |
-| `abstention_rate` | Fraction of predictions rejected |
-| `upper_bound` | Clopper-Pearson confidence bound |
+---
 
 ## Citation
 
+If you find this work useful, please cite:
+
 ```bibtex
 @misc{wang2026safegroundknowtrustgui,
-      title={SafeGround: Know When to Trust GUI Grounding Models via Uncertainty Calibration}, 
-      author={Qingni Wang and Yue Fan and Xin Eric Wang},
-      year={2026},
-      eprint={2602.02419},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2602.02419}, 
+  title={SafeGround: Know When to Trust GUI Grounding Models via Uncertainty Calibration},
+  author={Qingni Wang and Yue Fan and Xin Eric Wang},
+  year={2026},
+  eprint={2602.02419},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI},
+  url={https://arxiv.org/abs/2602.02419}
 }
 ```
