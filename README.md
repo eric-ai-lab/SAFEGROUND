@@ -5,7 +5,7 @@ This repository contains the **official implementation of SafeGround**, an uncer
 SafeGround estimates *spatial uncertainty* by aggregating multiple stochastic grounding predictions into a patch-level probability distribution, and calibrates uncertainty thresholds with finite-sample guarantees. This enables risk-aware deployment of GUI agents through selective prediction and safe deferral.
 
 <p align="center">
-  <img src="safeground.png" alt="Framework Overview" width="85%">
+  <img src="images/safeground.png" alt="Framework Overview" width="85%">
 </p>
 
 **Paper:**
