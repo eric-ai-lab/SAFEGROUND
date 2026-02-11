@@ -14,6 +14,8 @@ SafeGround estimates *spatial uncertainty* by aggregating multiple stochastic gr
 
 **Project Page:**
 🔗 [https://safeground-ericlab.github.io](https://safeground-ericlab.github.io)
+
+
 ---
 
 ## Repository Structure
