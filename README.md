@@ -10,7 +10,6 @@ SafeGround estimates *spatial uncertainty* by aggregating multiple stochastic gr
 
 **Paper:**
 📄 *SafeGround: Know When to Trust GUI Grounding Models via Uncertainty Calibration*
-
 🔗 [https://arxiv.org/abs/2602.02419](https://arxiv.org/abs/2602.02419)
 
 **Project Page:**
